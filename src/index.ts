@@ -4,6 +4,15 @@ import expressHandlebars from 'express-handlebars'
 import path from 'path'
 import multer from 'multer'
 
+import router from './routes/index.routes'
+
+const storage = multer.diskStorage({
+	destination: path.join(__dirname, 'public/uploads'),
+	filename: (req, file, cb) => {
+		cb(null, file.originalname)
+	},
+})
+
 //Initializations
 dotenv.config()
 const app = express()
@@ -23,15 +32,16 @@ app.engine(
 app.set('view engine', '.hbs')
 
 //Middlewares
-app.use(multer({ dest: path.join(__dirname, 'uploads') }).single('image'))
+app.use(
+	multer({
+		storage,
+		dest: path.join(__dirname, 'uploads'),
+		limits: { fileSize: 1000000 },
+	}).single('image'),
+)
 
 //Routes
-app.get('/', (req, res) => res.render('index'))
-
-app.post('/upload', (req, res) => {
-	console.log(req.file)
-	res.send('Uploaded 2')
-})
+app.use(router)
 
 app.listen(app.get('port'), () =>
 	console.log('>>>>>Server running on port ' + app.get('port')),

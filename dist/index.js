@@ -8,6 +8,13 @@ var express_1 = __importDefault(require("express"));
 var express_handlebars_1 = __importDefault(require("express-handlebars"));
 var path_1 = __importDefault(require("path"));
 var multer_1 = __importDefault(require("multer"));
+var index_routes_1 = __importDefault(require("./routes/index.routes"));
+var storage = multer_1.default.diskStorage({
+    destination: path_1.default.join(__dirname, 'public/uploads'),
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    },
+});
 //Initializations
 dotenv_1.default.config();
 var app = express_1.default();
@@ -22,13 +29,13 @@ app.engine('.hbs', express_handlebars_1.default({
 }));
 app.set('view engine', '.hbs');
 //Middlewares
-app.use(multer_1.default({ dest: path_1.default.join(__dirname, 'uploads') }).single('image'));
+app.use(multer_1.default({
+    storage: storage,
+    dest: path_1.default.join(__dirname, 'uploads'),
+    limits: { fileSize: 1000000 },
+}).single('image'));
 //Routes
-app.get('/', function (req, res) { return res.render('index'); });
-app.post('/upload', function (req, res) {
-    console.log(req.file);
-    res.send('Uploaded 2');
-});
+app.use(index_routes_1.default);
 app.listen(app.get('port'), function () {
     return console.log('>>>>>Server running on port ' + app.get('port'));
 });
